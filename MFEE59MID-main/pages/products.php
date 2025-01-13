@@ -142,7 +142,7 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
             <th>器材價格</th>
             <th>圖片連結</th>
             <th>建立時間</th>
-            <th>編輯</th>
+
             <th>刪除</th>
           </tr>
         </thead>
@@ -158,9 +158,6 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
               <td><?= $r['base_price'] ?></td>
               <td><?= $r['image_url'] ?></td>
               <td><?= $r['created_at'] ?></td>
-              <td><a class="dropdown-item" href="article-edit.php?article_id=<?=$v['article_id']?>">
-                <i class="bx bx-edit-alt me-1"></i></a>
-              </td>
               <td><a class="dropdown-item"  href="javascript:" onclick="deleteOne(event)">
                 <i class="bx bx-trash me-1"></i></a>
               </td>
@@ -169,9 +166,28 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
         </tbody>
       </table>
     </div>
-
 </h2>
-
+<!-- modal delete -->
+<div class="modal fade" tabindex="-1" style="display: none;" aria-hidden="true" id="delete-modal">
+    <div class="modal-dialog modal-lg" role="document" >
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <h4 class="modal-title" id="exampleModalLabel2">確定是否刪除</h4>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary me-3" data-bs-dismiss="modal" id="yesgo"> 
+            <i class="fa-solid fa-circle-check me-3"></i>是
+            </button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"> <a href="./products.php" class="nav-link">
+            <i class="fa-solid fa-circle-xmark me-3"></i>否</a>
+            </button>
+        </div>
+    </div>
+    </div>
+</div>
 
 <?php include __DIR__ . '/includes/html-content wrapper-end.php'; ?>
 <?php include __DIR__ . '/includes/html-script.php'; ?>
@@ -180,7 +196,7 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
   const deleteOne = e=>{
           e.preventDefault();
           const tr = e.target.closest('tr')
-          const [,td_product_id,td_name,] = tr.querySelectorAll('td');
+          const [td_product_id, ,td_name] = tr.querySelectorAll('td');
           const productid = td_product_id.innerHTML
           const name = td_name.innerHTML
           const delModal = new bootstrap.Modal('#delete-modal')
