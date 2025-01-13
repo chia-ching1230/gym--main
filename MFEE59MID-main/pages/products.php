@@ -142,7 +142,7 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
             <th>器材價格</th>
             <th>圖片連結</th>
             <th>建立時間</th>
-
+            <th>編輯</th>
             <th>刪除</th>
           </tr>
         </thead>
@@ -158,6 +158,9 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
               <td><?= $r['base_price'] ?></td>
               <td><?= $r['image_url'] ?></td>
               <td><?= $r['created_at'] ?></td>
+              <td><a class="dropdown-item" href="products_edit.php?product_id=<?= $r['product_id'] ?>">
+                <i class="bx bx-edit-alt me-1"></i></a>
+              </td>
               <td><a class="dropdown-item"  href="javascript:" onclick="deleteOne(event)">
                 <i class="bx bx-trash me-1"></i></a>
               </td>
