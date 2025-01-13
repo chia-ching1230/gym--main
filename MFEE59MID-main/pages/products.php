@@ -34,9 +34,21 @@
   padding: 8px 8px;
 }
 </style>
+<div class="card">
+  <div class="row">
+    <div class="col-10">
+      <h4 class="card-header">器材列表</h4>
+    </div>
+    <div class="col-2 card-header d-flex align-items-center justify-content-center">
+      <a href="products_add.php" class="nav-link">
+        <span class="d-none d-sm-block"> 
+        <i class="fa-solid fa-square-plus fa-xl mx-3"></i>新增器材</span>
+      </a>
+    </div>
+  </div>
 <h2>
 <?php
-$perPage = 25; # 每一頁有幾筆
+$perPage = 15; # 每一頁有幾筆
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
 if ($page < 1) {
   header('Location: ?page=1'); # 跳轉頁面 (後端), 也稱為 redirect (轉向)
@@ -59,22 +71,19 @@ if ($totalRows > 0) {
 
 # 取第一頁的資料
 $sql = sprintf("SELECT 
-    p.id AS product_id,              -- 商品 ID
-    p.name AS product_name,          -- 商品名稱
-    p.description AS product_description, -- 商品描述
-    p.base_price AS product_price,   -- 商品基本價格
-    pw.weight AS product_weight,     -- 商品重量 (如果有規格)
-    c.name AS category_name,         -- 商品分類名稱
-    p.image_url AS product_image,    -- 商品圖片
-    p.created_at AS product_created_at -- 商品建立時間
+    p.id AS product_id, -- 商品 ID
+    product_code,            -- 商品號碼  
+    p.name,          -- 商品名稱
+    p.description, -- 商品描述
+    p.category_name,   -- 商品分類名稱
+    p.weight,     -- 商品重量 (如果有規格)
+    base_price,     -- 商品價格
+    p.image_url,    -- 商品圖片
+    p.created_at -- 商品建立時間
 FROM 
     Products p
-LEFT JOIN 
-    Product_Weights pw ON p.id = pw.product_id -- 連接商品重量表 (左連接，包含無重量規格的商品)
-LEFT JOIN 
-    Categories c ON p.category_id = c.id       -- 連接商品分類表
 ORDER BY 
-    p.id, pw.weight -- 根據商品 ID 和重量排序 (可選)
+    p.id, p.weight -- 根據商品 ID 和重量排序 (可選)
 LIMIT %s, %s", 
 ($page - 1) * $perPage,  $perPage);
 $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
@@ -124,27 +133,37 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
       <table class="table table-bordered table-striped">
         <thead>
           <tr>
-            <th scope="col">#id</th>
-            <th scope="col">商品名稱</th>
-            <th scope="col">商品描述</th>
-            <th scope="col">器材價格</th>
-            <th>器材重量(公斤)</th>
+            <th >#id</th>
+            <th>器材編號</th>
+            <th>器材名稱</th>
+            <th>器材描述</th>
             <th>器材種類</th>
+            <th>器材重量(公斤)</th>
+            <th>器材價格</th>
             <th>圖片連結</th>
             <th>建立時間</th>
+            <th>編輯</th>
+            <th>刪除</th>
           </tr>
         </thead>
         <tbody>
           <?php foreach ($rows as $r): ?>
             <tr>
               <td><?= $r['product_id'] ?></td>
-              <td><?= $r['product_name'] ?></td>
-              <td><?= $r['product_description'] ?></td>
-              <td><?= $r['product_price'] ?></td>
-              <td><?= $r['product_weight'] ?></td>
+              <td><?= $r['product_code'] ?></td>
+              <td><?= $r['name'] ?></td>
+              <td><?= $r['description'] ?></td>
               <td><?= $r['category_name'] ?></td>
-              <td><?= $r['product_image'] ?></td>
-              <td><?= $r['product_created_at'] ?></td>
+              <td><?= $r['weight'] ?></td>
+              <td><?= $r['base_price'] ?></td>
+              <td><?= $r['image_url'] ?></td>
+              <td><?= $r['created_at'] ?></td>
+              <td><a class="dropdown-item" href="article-edit.php?article_id=<?=$v['article_id']?>">
+                <i class="bx bx-edit-alt me-1"></i></a>
+              </td>
+              <td><a class="dropdown-item"  href="javascript:" onclick="deleteOne(event)">
+                <i class="bx bx-trash me-1"></i></a>
+              </td>
             </tr>
           <?php endforeach; ?>
         </tbody>
@@ -156,4 +175,20 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
 
 <?php include __DIR__ . '/includes/html-content wrapper-end.php'; ?>
 <?php include __DIR__ . '/includes/html-script.php'; ?>
+<script>
+  
+  const deleteOne = e=>{
+          e.preventDefault();
+          const tr = e.target.closest('tr')
+          const [,td_product_id,td_name,] = tr.querySelectorAll('td');
+          const productid = td_product_id.innerHTML
+          const name = td_name.innerHTML
+          const delModal = new bootstrap.Modal('#delete-modal')
+          delModal.show()
+          document.querySelector('#exampleModalLabel2').innerHTML=`是否要刪除編號為${productid}，名稱為${name}的器材`
+          document.querySelector('#yesgo').addEventListener('click',function(){
+            location.href=`product-del-api.php?product_id=${productid}`
+          })
+      }
+</script>
 <?php include __DIR__ . '/includes/html-footer.php'; ?>
