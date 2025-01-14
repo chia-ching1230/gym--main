@@ -45,12 +45,12 @@ if ($page < 1) {
   exit; # 離開 (結束) 程式 (以下的程式都不會執行)
 }
 
-$keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
-$where =" WHERE 1 ";
+$keyword = empty($_GET['keyword']) ? '' : $_GET['keyword'];
+
+$where = ' WHERE 1 '; 
 if($keyword){
   $keyword_ = $pdo->quote("%{$keyword}%"); 
-  echo $keyword_;
-  $where .= " AND (name LIKE $keyword_)";
+  $where .= " AND name LIKE $keyword_";
 }
 
 $t_sql = "SELECT COUNT(1) FROM `products` $where";
@@ -62,14 +62,15 @@ $totalPages = ceil($totalRows / $perPage);
 $rows = []; # 設定預設值
 if ($totalRows > 0) {
   if ($page > $totalPages) {
-    ob_clean();
+    // ob_clean();
     # 用戶要看的頁碼超出範圍, 跳到最後一頁
     header('Location: ?page=' . $totalPages);
     exit;
   }
 
 # 取第一頁的資料
-$sql = sprintf("SELECT 
+$sql = sprintf(
+"SELECT 
     p.id AS product_id, -- 商品 ID
     product_code,            -- 商品號碼  
     p.name,          -- 商品名稱
@@ -81,10 +82,13 @@ $sql = sprintf("SELECT
     p.created_at -- 商品建立時間
 FROM 
     Products p
+%s  
 ORDER BY 
     p.id, p.weight -- 根據商品 ID 和重量排序 (可選)
 LIMIT %s, %s", 
-($page - 1) * $perPage,  $perPage);
+$where,
+($page - 1) * $perPage,  
+$perPage);
 $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
 }
 ?>
@@ -142,7 +146,8 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
                   <button class="input-group-text">
                     <i class="tf-icons bx bx-search"></i>
                   </button>
-              <input type="search" class="form-control" placeholder="Search..." name="keyword" value="<?=empty($_GET['keyword'])?'':htmlentities($_GET['keyword'])?>">
+              <input type="search" class="form-control" placeholder="Search..." name="keyword" 
+              value="<?=empty($_GET['keyword'])?'':htmlentities($_GET['keyword'])?>">
             </div>
         </form>
       </div>
