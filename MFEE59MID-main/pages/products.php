@@ -27,26 +27,16 @@
 
 /* 縮短表格行高 */
 .table tbody tr {
-  line-height: 1.2;
+  line-height: 1.5;
+  font-size: 18px;
 }
 
 .table tbody tr td {
-  padding: 8px 8px;
+  padding: 10px 10px;
 }
 </style>
-<div class="card">
-  <div class="row">
-    <div class="col-10">
-      <h4 class="card-header">器材列表</h4>
-    </div>
-    <div class="col-2 card-header d-flex align-items-center justify-content-center">
-      <a href="products_add.php" class="nav-link">
-        <span class="d-none d-sm-block"> 
-        <i class="fa-solid fa-square-plus fa-xl mx-3"></i>新增器材</span>
-      </a>
-    </div>
-  </div>
-<h2>
+
+
 <?php
 $perPage = 15; # 每一頁有幾筆
 $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
@@ -54,7 +44,16 @@ if ($page < 1) {
   header('Location: ?page=1'); # 跳轉頁面 (後端), 也稱為 redirect (轉向)
   exit; # 離開 (結束) 程式 (以下的程式都不會執行)
 }
-$t_sql = "SELECT COUNT(1) FROM `products`";
+
+$keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
+$where =" WHERE 1 ";
+if($keyword){
+  $keyword_ = $pdo->quote("%{$keyword}%"); 
+  echo $keyword_;
+  $where .= " AND (name LIKE $keyword_)";
+}
+
+$t_sql = "SELECT COUNT(1) FROM `products` $where";
 # 總筆數
 $totalRows = $pdo->query($t_sql)->fetch(PDO::FETCH_NUM)[0];
 # 總頁數
@@ -89,9 +88,21 @@ LIMIT %s, %s",
 $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
 }
 ?>
+<div class="card pb-5">
+  <div class="row">
+    <div class="col-10">
+      <h4 class="card-header">器材列表</h4>
+    </div>
+    <div class="col-2 card-header d-flex align-items-center justify-content-center fs-4">
+      <a href="products_add.php" class="nav-link">
+        <span class="d-none d-sm-block"> 
+        <i class="fa-solid fa-square-plus fa-xl mx-3 fs-4"></i>新增器材</span>
+      </a>
+    </div>
+  </div>
 <div class="container">
 <div class="row mt-4">
-    <div class="col">
+    <div class="col d-flex justify-content-between">
       <nav aria-label="Page navigation example">
         <ul class="pagination">
 
@@ -122,9 +133,19 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
               <i class="fa-solid fa-angles-right"></i>
             </a>
           </li>
-          
         </ul>
       </nav>
+      <!-- 搜尋 -->
+      <div class="col-lg-3 me-5  d-flex align-items-center justify-content-end">
+        <form class="d-flex  ">
+            <div class="input-group">
+                  <button class="input-group-text">
+                    <i class="tf-icons bx bx-search"></i>
+                  </button>
+              <input type="search" class="form-control" placeholder="Search..." name="keyword" value="<?=empty($_GET['keyword'])?'':htmlentities($_GET['keyword'])?>">
+            </div>
+        </form>
+      </div>
     </div>
   </div>
   <div class="row">
@@ -169,7 +190,8 @@ $rows = $pdo->query($sql)->fetchAll(); # 取得該分頁的資料
         </tbody>
       </table>
     </div>
-</h2>
+  </div> 
+
 <!-- modal delete -->
 <div class="modal fade" tabindex="-1" style="display: none;" aria-hidden="true" id="delete-modal">
     <div class="modal-dialog modal-lg" role="document" >
